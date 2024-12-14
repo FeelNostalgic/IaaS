@@ -18,39 +18,39 @@ class Encrypter:
         return keys["PublicKey"], keys["PrivateKeyCiphertextBlob"]
 
     @staticmethod
-    def encrypt_password(password, public_key):
+    def encrypt_data(data, public_key):
         """
-        Encrypt password with public key
+        Encrypt data with public key
 
-        :param password: plaintext password
+        :param data: plaintext data
         :param public_key: public key from database
-        :return: password encrypted
+        :return: data encrypted
         """
         public_key = RSA.import_key(public_key)
         # Return a cipher object PKCS1OAEP_Cipher
         # that can be used to perform PKCS#1 OAEP encryption or decryption.
         cipher = PKCS1_OAEP.new(public_key)
         #Encodes the string, using the specified encoding.
-        encoded_data = password.encode("utf-8")
+        encoded_data = data.encode("utf-8")
         # Encrypt a password with PKCS#1 OAEP.
         return cipher.encrypt(encoded_data)
 
     @staticmethod
-    def decrypt_password(password, private_key):
+    def decrypt_data(data, private_key):
         """
-        Decrypt password with private key from database.
+        Decrypt data with private key from database.
         This function decrypt private key into plaintext.
 
-        :param password: encrypted password
+        :param data: encrypted data
         :param private_key: private key from database. Will be decrypted here
-        :return: password decrypted in plaintext
+        :return: data decrypted in plaintext
         """
         private_key = RSA.import_key(Encrypter.__decrypt_private_key(private_key))
         # Return a cipher object PKCS1OAEP_Cipher
         # that can be used to perform PKCS#1 OAEP encryption or decryption.
         cipher = PKCS1_OAEP.new(private_key)
         # Encrypt a message with PKCS#1 OAEP.
-        decrypted_data = cipher.decrypt(password)
+        decrypted_data = cipher.decrypt(data)
         # Decodes the bytes-like object using the specified encoding.
         return decrypted_data.decode("utf-8")
 

@@ -1,17 +1,8 @@
-﻿from Backend.database import DatabaseAPI
+﻿from Backend.errorEnums import UserCreationError, UserLoginError
+from Backend.database import DatabaseAPI
 from Backend.encrypter import Encrypter
-from enum import Enum
+from Backend.s3Controller import S3Controller
 
-class UserCreationError(Enum):
-    NONE = "No errors"
-    USERNAME_ALREADY_EXISTS = "The username already exists."
-    INVALID_USERNAME = "The username is invalid."
-
-class UserLoginError(Enum):
-    NONE = "No errors"
-    INVALID_USERNAME = "The username is invalid."
-    INVALID_PASSWORD = "The password is invalid."
-    USERNAME_DOES_NOT_EXIST = "The username does not exist."
 
 class UsersController:
     """
@@ -20,6 +11,7 @@ class UsersController:
 
     def __init__(self):
         self.database = DatabaseAPI()
+        self.s3Controller = S3Controller()
         self.is_logged_in = False
 
     def register_user(self, username, password, full_name):
@@ -41,7 +33,7 @@ class UsersController:
 
         # Encrypt password
         # TODO: check password strength (prob. in frontend before this method is called)
-        password_encrypted = Encrypter.encrypt_password(password, public_key)
+        password_encrypted = Encrypter.encrypt_data(password, public_key)
 
         # TODO: check if username exits
         if DatabaseAPI.is_user_registered(username):
@@ -50,6 +42,10 @@ class UsersController:
         # TODO: save to data base
         #saveToDatabase(username, full_name, password_encrypted, public_key, cyphered_private_key)
         DatabaseAPI.register_user(username, full_name, password_encrypted, public_key, cyphered_private_key)
+
+        # Create S3 bucket
+        if not self.s3Controller.create_empty_bucket(username):
+            return UserCreationError.S3_BUCKET_NOT_CREATED
 
         return UserCreationError.NONE
 
@@ -72,10 +68,10 @@ class UsersController:
         encrypted_password = DatabaseAPI.get_user_password(username)
 
         # TODO: get private key from database
-        encrypted_private_key = DatabaseAPI.get_user_private_key(username)
+        encrypted_private_key = DatabaseAPI.get_user_cyphered_private_key(username)
 
         # Decrypt user's password
-        decrypted_password = Encrypter.decrypt_password(encrypted_password, encrypted_private_key)
+        decrypted_password = Encrypter.decrypt_data(encrypted_password, encrypted_private_key)
 
         # TODO: compare password
         if password == decrypted_password:

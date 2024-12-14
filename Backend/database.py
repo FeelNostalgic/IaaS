@@ -96,7 +96,28 @@ class DatabaseAPI:
                 connection.close()
 
     @staticmethod
-    def get_user_private_key(username):
+    def get_user_public_key(username):
+        try:
+            connection = mysql.connector.connect(**config)
+            if connection.is_connected():
+                cursor = connection.cursor()
+                sql = "SELECT public_key FROM users WHERE username = %s"
+                cursor.execute(sql, (username,))
+
+                result = cursor.fetchone()
+                cyphered_private_key = result[0]
+                return cyphered_private_key
+
+        except mysql.connector.Error as e:
+            print(f"Error conectándose a la base de datos MySQL: {e}")
+
+        finally:
+            if connection.is_connected():
+                cursor.close()
+                connection.close()
+
+    @staticmethod
+    def get_user_cyphered_private_key(username):
         try:
             connection = mysql.connector.connect(**config)
             if connection.is_connected():
