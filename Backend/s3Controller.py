@@ -1,5 +1,8 @@
 ﻿import boto3
 from botocore.exceptions import ClientError
+
+from Backend.database import DatabaseAPI
+from Backend.encrypter import Encrypter
 from Backend.errorEnums import S3UploadError, S3BucketError
 
 
@@ -65,3 +68,30 @@ class S3Controller:
         except ClientError as e:
             print(e)
             return False
+
+    def download_files(self, username):
+        """
+        Download all files from user's S3 bucket
+
+        :param username: user's name to download files
+        :return: a list of files downloaded
+        """
+
+        try:
+            bucket_name = f"{self.BUCKET_PREFIX}".lower()
+            objets = self.s3_client.list_objects_v2(Bucket=bucket_name, Prefix=username)
+
+            result = []
+
+            for object in objets['Contents']:
+                date = object['Key']
+
+                object_s3 = self.s3_client.get_object(Bucket=bucket_name, Key=date)
+                message = object_s3['Body'].read()
+                if message != b'':
+                    result.append((date, message))
+
+            return result
+        except ClientError as e:
+            print(e)
+            return []

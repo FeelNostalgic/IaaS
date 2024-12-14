@@ -10,18 +10,17 @@ class UsersFunctionality:
     """
 
     def __init__(self):
-        self.database = DatabaseAPI()
         self.s3Controller = S3Controller()
         pass
 
-    def get_all_users(self):
+    @staticmethod
+    def get_all_users():
         """
         Return all registered users
         :return: A list of users
         """
         # TODO: get user from database
-
-        pass
+        return DatabaseAPI.get_all_users()
 
     def send_message_to_registered_user(self, register_username, message):
         """
@@ -49,5 +48,3 @@ class UsersFunctionality:
             return S3UploadError.NONE
         else:
             return S3UploadError.S3_FILE_NOT_UPLOADED
-
-

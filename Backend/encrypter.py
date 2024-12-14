@@ -45,7 +45,8 @@ class Encrypter:
         :param private_key: private key from database. Will be decrypted here
         :return: data decrypted in plaintext
         """
-        private_key = RSA.import_key(Encrypter.__decrypt_private_key(private_key))
+        decrypted_private_key = Encrypter.__decrypt_private_key(private_key)
+        private_key = RSA.import_key(decrypted_private_key)
         # Return a cipher object PKCS1OAEP_Cipher
         # that can be used to perform PKCS#1 OAEP encryption or decryption.
         cipher = PKCS1_OAEP.new(private_key)

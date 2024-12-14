@@ -1,4 +1,6 @@
-﻿from Backend.errorEnums import UserCreationError, UserLoginError
+﻿import base64
+
+from Backend.errorEnums import UserCreationError, UserLoginError
 from Backend.database import DatabaseAPI
 from Backend.encrypter import Encrypter
 from Backend.s3Controller import S3Controller
@@ -10,7 +12,6 @@ class UsersController:
     """
 
     def __init__(self):
-        self.database = DatabaseAPI()
         self.s3Controller = S3Controller()
         self.is_logged_in = False
 
@@ -41,7 +42,8 @@ class UsersController:
 
         # TODO: save to data base
         #saveToDatabase(username, full_name, password_encrypted, public_key, cyphered_private_key)
-        DatabaseAPI.register_user(username, full_name, password_encrypted, public_key, cyphered_private_key)
+        DatabaseAPI.register_user(username=username, full_name=full_name, password=password_encrypted,
+                                  public_key=public_key, cyphered_private_key=cyphered_private_key)
 
         # Create S3 bucket
         if not self.s3Controller.create_empty_bucket(username):
@@ -73,29 +75,30 @@ class UsersController:
         # Decrypt user's password
         decrypted_password = Encrypter.decrypt_data(encrypted_password, encrypted_private_key)
 
-        # TODO: compare password
+        # Compare password
         if password == decrypted_password:
             self.is_logged_in = True
             return UserLoginError.NONE
         else:
             return UserLoginError.INVALID_PASSWORD
 
-    def get_user_messages(self):
+    def get_user_messages(self, username):
         """
         If user is login, return messages from S3 bucket
 
         :return: a list of messages
         """
-        # TODO: get all messages from S3 bucket
-
-        # TODO: decrypt all messages with private key
-        # TODO: get private key from database
-        # encrypted_private_key = get_user_private_key(username)
-        # Decrypt user's password
-        # decrypted_password = Encrypter.decrypt_password(encrypted_password, encrypted_private_key)
-
         if self.is_logged_in:
-            pass
+            # TODO: get all messages from S3 bucket
+            all_messages_encrypted = self.s3Controller.download_files(username)
 
-        pass
+            # TODO: get private key from database
+            encrypted_private_key = DatabaseAPI.get_user_cyphered_private_key(username)
 
+            # decrypt all messages with private key
+            result = []
+            for date, encrypted_message in all_messages_encrypted:
+                decrypted_message = Encrypter.decrypt_data(encrypted_message, encrypted_private_key)
+                result.append((date, decrypted_message))
+
+            return result

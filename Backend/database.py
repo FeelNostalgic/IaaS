@@ -136,3 +136,24 @@ class DatabaseAPI:
             if connection.is_connected():
                 cursor.close()
                 connection.close()
+
+    @staticmethod
+    def get_all_users():
+        try:
+            connection = mysql.connector.connect(**config)
+            if connection.is_connected():
+                cursor = connection.cursor()
+                sql = "SELECT username FROM users"
+                cursor.execute(sql)
+
+                result = cursor.fetchall()
+                usernames = [fila[0] for fila in result]
+                return usernames
+
+        except mysql.connector.Error as e:
+            print(f"Error conectándose a la base de datos MySQL: {e}")
+
+        finally:
+            if connection.is_connected():
+                cursor.close()
+                connection.close()
