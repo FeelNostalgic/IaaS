@@ -1,10 +1,32 @@
-﻿<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
+﻿{% extends "base.html" %}
 
-</body>
-</html>
+{% block head %}
+{% endblock %}
+
+{% block body %}
+
+    <h1>Messages</h1>
+
+    <div class="logout">
+        <form action="/logout" method="GET">
+            <input type="submit" value="Logout">
+        </form>
+    </div>
+
+    <div class="messages">
+        <table border="]">
+        <tr>
+            <th>Date</th>
+            <th>Message</th>
+        </tr>
+        {% for message in messages %}
+        <tr>
+            <td>{{ message.date}} </td>
+            <td>{{ message.message }}</td>
+
+        </tr>
+        {% endfor %}
+    </table>
+
+    </div>
+{% endblock %}

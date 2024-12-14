@@ -1,10 +1,29 @@
-﻿<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
+﻿{% extends "base.html" %}
 
-</body>
-</html>
+{% block head %}
+{% endblock %}
+
+{% block body %}
+
+    <h1>Send Message</h1>
+
+    <div class="sendMessage">
+        <form action="/sendMessage" method="POST">
+            <label for="opciones">Elige el receptor del mensaje:</label>
+            <select id="username" name="username">
+                {% for user in users %}
+                    <option value="{{ user.username }}">{{ user.full_name }}</option>
+                {% endfor %}
+            </select>
+         <label for="message">Mensaje:</label>
+           <textarea id="message" name="message" placeholder="Escribe tu mensaje aquí"></textarea>
+            <button type="submit">Send</button>
+        </form>
+    </div>
+
+    <div class="return">
+        <form action="/" method="GET">
+            <button type="submit">Return</button>
+        </form>
+    </div>
+{% endblock %}

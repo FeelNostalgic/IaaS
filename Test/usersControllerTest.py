@@ -1,7 +1,7 @@
 ﻿import unittest
 
 from Backend.database import DatabaseAPI
-from Backend.usersController import UsersController
+from Backend.userController import UserController
 from Backend.errorEnums import UserCreationError, UserLoginError, S3UploadError
 from Backend.usersFunctionality import UsersFunctionality
 
@@ -10,7 +10,7 @@ class UsersControllerTest(unittest.TestCase):
 
     def setUp(self):
         self.user_data = {"username": "JohnD", "full_name": "John Doe", "password": "p1"}
-        self.users_controller = UsersController()
+        self.users_controller = UserController()
         self.users_Functionality = UsersFunctionality()
 
     def tearDown(self):

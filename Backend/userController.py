@@ -6,12 +6,13 @@ from Backend.encrypter import Encrypter
 from Backend.s3Controller import S3Controller
 
 
-class UsersController:
+class UserController:
     """
     Class: User with full name, username, password, and an AWS KMS data key pair.
     """
 
     def __init__(self):
+        self.username = None
         self.s3Controller = S3Controller()
         self.is_logged_in = False
 
@@ -78,11 +79,19 @@ class UsersController:
         # Compare password
         if password == decrypted_password:
             self.is_logged_in = True
+            self.username = username
             return UserLoginError.NONE
         else:
             return UserLoginError.INVALID_PASSWORD
 
-    def get_user_messages(self, username):
+    def logout_user(self):
+        """
+        Close user session
+        """
+        self.is_logged_in = False
+        self.username = None
+
+    def get_user_messages(self):
         """
         If user is login, return messages from S3 bucket
 
@@ -90,15 +99,15 @@ class UsersController:
         """
         if self.is_logged_in:
             # TODO: get all messages from S3 bucket
-            all_messages_encrypted = self.s3Controller.download_files(username)
+            all_messages_encrypted = self.s3Controller.download_files(self.username)
 
             # TODO: get private key from database
-            encrypted_private_key = DatabaseAPI.get_user_cyphered_private_key(username)
+            encrypted_private_key = DatabaseAPI.get_user_cyphered_private_key(self.username)
 
             # decrypt all messages with private key
             result = []
             for date, encrypted_message in all_messages_encrypted:
                 decrypted_message = Encrypter.decrypt_data(encrypted_message, encrypted_private_key)
-                result.append((date, decrypted_message))
+                result.append({"date":date,"message":decrypted_message})
 
             return result

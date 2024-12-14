@@ -143,12 +143,15 @@ class DatabaseAPI:
             connection = mysql.connector.connect(**config)
             if connection.is_connected():
                 cursor = connection.cursor()
-                sql = "SELECT username FROM users"
+                sql = "SELECT username,full_name FROM users"
                 cursor.execute(sql)
 
                 result = cursor.fetchall()
-                usernames = [fila[0] for fila in result]
-                return usernames
+                users = []
+                for fila in result:
+                    users.append({"username": fila[0], "full_name": fila[1]})
+
+                return users
 
         except mysql.connector.Error as e:
             print(f"Error conectándose a la base de datos MySQL: {e}")

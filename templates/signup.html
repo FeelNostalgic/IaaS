@@ -1,0 +1,24 @@
+﻿{% extends "base.html" %}
+
+{% block head %}
+{% endblock %}
+
+{% block body %}
+
+    <h1>Sign Up</h1>
+
+    <div class="signup">
+        <form action="/signup" method="POST">
+            <input type="text" name="username" placeholder="Username">
+            <input type="text" name="full_name" placeholder="Full Name">
+            <input type="password" name="password" placeholder="Password">
+            <input type="submit" value="Sign up">
+        </form>
+    </div>
+
+    <div class="return">
+        <form action="/" method="GET">
+            <button type="submit">Return</button>
+        </form>
+    </div>
+{% endblock %}
