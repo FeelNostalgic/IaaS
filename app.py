@@ -1,8 +1,8 @@
 ﻿from flask import Flask
-from Backend.encrypter import Encrypter
+from Backend.usersController import UsersController
 
 app = Flask(__name__)
-encrypter = Encrypter()
+users_controller = UsersController()
 
 @app.route('/')
 def index():
@@ -14,8 +14,9 @@ def index():
     # and decrypt then using private key
     #private_key_plaintext = Encrypter.decrypt_private_key(cyphered_private_key)
 
-    return "Hello World!"
+    error = users_controller.register_user('test1', 'p1', 'test 1')
 
+    return f"{error.value}"
 
 if __name__ == '__main__':
     app.run()

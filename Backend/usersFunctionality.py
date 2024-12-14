@@ -9,9 +9,9 @@
     def get_all_users(self):
         """
         Return all registered users
-        :return:
+        :return: A list of users
         """
-
+        
         pass
 
     def send_message_to_registered_user(self, register_user, message):
