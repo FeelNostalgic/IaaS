@@ -1,6 +1,4 @@
-﻿import base64
-
-from Backend.errorEnums import UserCreationError, UserLoginError
+﻿from Backend.errorEnums import UserCreationError, UserLoginError
 from Backend.database import DatabaseAPI
 from Backend.encrypter import Encrypter
 from Backend.s3Controller import S3Controller
@@ -99,15 +97,15 @@ class UserController:
         """
         if self.is_logged_in:
             # TODO: get all messages from S3 bucket
-            all_messages_encrypted = self.s3Controller.download_files(self.username)
+            all_messages_encrypted = self.s3Controller.download_large_files(self.username)
 
             # TODO: get private key from database
             encrypted_private_key = DatabaseAPI.get_user_cyphered_private_key(self.username)
 
             # decrypt all messages with private key
             result = []
-            for date, encrypted_message in all_messages_encrypted:
-                decrypted_message = Encrypter.decrypt_data(encrypted_message, encrypted_private_key)
-                result.append({"date":date,"message":decrypted_message})
+            for encrypted_data in all_messages_encrypted:
+                decrypted_message = Encrypter.decrypt_large_data(encrypted_data, encrypted_private_key)
+                result.append({"date":encrypted_data["date"],"message":decrypted_message})
 
             return result

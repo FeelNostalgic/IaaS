@@ -72,67 +72,61 @@ class Encrypter:
     @staticmethod
     def encrypt_large_data(data, public_key):
         """
-        Cifra datos largos utilizando un enfoque híbrido: RSA + AES.
-
-        :param data: Texto plano a cifrar.
-        :param public_key: Clave pública RSA.
-        :return: Tuple (clave_aes_cifrada, datos_cifrados, iv)
+        Encrypt data using a hybrid AES+RSA approach.
+    
+        :param data: plaintext data (string)
+        :param public_key: public key from database (string or bytes)
+        :return: a dictionary containing the encrypted AES key, nonce, tag, and encrypted_message
         """
-        # Cargar clave pública RSA
+        # Import the RSA public key
         public_key = RSA.import_key(public_key)
-        rsa_cipher = PKCS1_OAEP.new(public_key)
 
-        # Generar una clave simétrica AES (clave de sesión)
-        aes_key = get_random_bytes(16)  # Genera una clave AES de 128 bits
+        # Generate a random AES key
+        aes_key = get_random_bytes(16)  # 16 bytes = 128-bit AES key
 
-        # Cifrar los datos largos con AES en modo CBC
-        cipher_aes = AES.new(aes_key, AES.MODE_CBC)  # Cifrado AES con modo CBC
-        iv = cipher_aes.iv  # Vector de inicialización (IV)
-        data_padded = Encrypter.__pad_data(data.encode("utf-8"))  # Asegúrate de ajustar el texto (padding)
-        encrypted_data = cipher_aes.encrypt(data_padded)
+        # Encrypt the data with AES
+        cipher_aes = AES.new(aes_key, AES.MODE_EAX)
+        nonce = cipher_aes.nonce
+        encrypted_message, tag = cipher_aes.encrypt_and_digest(data.encode("utf-8"))
 
-        # Cifrar la clave AES con RSA
-        encrypted_aes_key = rsa_cipher.encrypt(aes_key)
+        # Encrypt the AES key with RSA
+        cipher_rsa = PKCS1_OAEP.new(public_key)
+        encrypted_aes_key = cipher_rsa.encrypt(aes_key)
 
-        return encrypted_aes_key, encrypted_data, iv
-
-    @staticmethod
-    def __pad_data(data):
-        """
-        Aplica relleno (padding) para que los datos sean múltiplos del tamaño del bloque AES (16 bytes).
-        """
-        block_size = 16
-        padding_length = block_size - len(data) % block_size
-        return data + bytes([padding_length]) * padding_length
+        # Return the encrypted components as a dictionary
+        return {
+            "encrypted_aes_key": encrypted_aes_key,
+            "nonce": nonce,
+            "tag":tag,
+            "encrypted_message": encrypted_message
+        }
 
     @staticmethod
-    def decrypt_large_data(encrypted_aes_key, encrypted_data, iv, encrypted_private_key):
+    def decrypt_large_data(encrypted_data, private_key):
         """
-        Descifra datos largos utilizando un enfoque híbrido: RSA + AES.
+        Decrypt data using a hybrid AES+RSA approach.
 
-        :param encrypted_aes_key: Clave AES cifrada con RSA.
-        :param encrypted_data: Datos cifrados con AES.
-        :param iv: Vector de inicialización (IV) usado para AES.
-        :param encrypted_private_key: Clave privada RSA.
-        :return: Texto descifrado.
+        :param encrypted_data: a dictionary containing encrypted AES key, nonce, tag, and encrypted_message
+        :param private_key: private RSA key for decryption (string or bytes)
+        :return: decrypted plaintext data (string)
         """
-        # Cargar clave privada RSA
-        decrypted_private_key = Encrypter.__decrypt_private_key(encrypted_private_key)
+        # Import the RSA private key
+        decrypted_private_key = Encrypter.__decrypt_private_key(private_key)
         private_key = RSA.import_key(decrypted_private_key)
-        rsa_cipher = PKCS1_OAEP.new(private_key)
 
-        # Descifrar la clave AES con RSA
-        aes_key = rsa_cipher.decrypt(encrypted_aes_key)
+        # Decode and decrypt the AES key using RSA
+        cipher_rsa = PKCS1_OAEP.new(private_key)
+        encrypted_aes_key = encrypted_data["encrypted_aes_key"]
+        aes_key = cipher_rsa.decrypt(encrypted_aes_key)
 
-        # Descifrar los datos largos con AES en modo CBC
-        cipher_aes = AES.new(aes_key, AES.MODE_CBC, iv)
-        data_padded = cipher_aes.decrypt(encrypted_data)
-        return Encrypter.__unpad_data(data_padded)
+        # Decode the AES components
+        nonce =encrypted_data["nonce"]
+        tag = encrypted_data["tag"]
+        encrypted_message = encrypted_data["encrypted_message"]
 
-    @staticmethod
-    def __unpad_data(data):
-        """
-        Elimina el relleno (padding) de los datos descifrados.
-        """
-        padding_length = data[-1]
-        return data[:-padding_length]
+        # Decrypt the data using AES
+        cipher_aes = AES.new(aes_key, AES.MODE_EAX, nonce=nonce)
+        plaintext = cipher_aes.decrypt_and_verify(encrypted_message, tag)
+
+        # Return the plaintext data as a string
+        return plaintext.decode("utf-8")

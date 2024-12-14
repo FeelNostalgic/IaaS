@@ -48,9 +48,8 @@ def sendMessage():
     if(request.method == 'POST'):
         username = request.form['username']
         message = request.form['message']
-        print(username)
-        print(message)
-        response = users_functionality.send_message_to_registered_user(username, message)
+        #response = users_functionality.send_message_to_registered_user(username, message)
+        response = users_functionality.send_large_message_to_registered_user(username, message)
         if response == S3UploadError.NONE:
             return redirect("/sendMessage")
 
