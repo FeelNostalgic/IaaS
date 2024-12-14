@@ -4,29 +4,22 @@
 {% endblock %}
 
 {% block body %}
-
+<div class="messages-container">
     <h1>Messages</h1>
 
     <div class="logout">
         <form action="/logout" method="GET">
-            <input type="submit" value="Logout">
+            <button type="submit">Logout</button>
         </form>
     </div>
 
     <div class="messages">
-        <table border="]">
-        <tr>
-            <th>Date</th>
-            <th>Message</th>
-        </tr>
         {% for message in messages %}
-        <tr>
-            <td>{{ message.date}} </td>
-            <td>{{ message.message }}</td>
-
-        </tr>
+            <div class="message">
+                <p class="date">{{ message.date }}</p>
+                <p class="content">{{ message.message }}</p>
+            </div>
         {% endfor %}
-    </table>
-
     </div>
+</div>
 {% endblock %}

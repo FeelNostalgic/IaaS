@@ -36,6 +36,7 @@ class UsersFunctionality:
 
         # Encrypt message with public key
         encrypted_message = Encrypter.encrypt_data(message, public_key)
+        # TODO: check max length of message
 
         # Get date and format as DD-MM-YY-hh-mm
         date = datetime.now()
