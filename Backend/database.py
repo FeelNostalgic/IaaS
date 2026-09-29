@@ -1,12 +1,6 @@
 ﻿import mysql.connector
 
-config = {
-    'host': '127.0.0.1',
-    'port': 3306,
-    'user': 'test_user',
-    'password': 'test_password',
-    'database': 'test_db'
-}
+from Backend.config import DB_CONFIG as config
 
 
 class DatabaseAPI:

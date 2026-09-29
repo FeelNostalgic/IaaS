@@ -3,8 +3,9 @@ from Crypto.PublicKey import RSA
 from Crypto.Cipher import PKCS1_OAEP, AES
 from Crypto.Random import get_random_bytes
 
-KMS_KEY = "8c1a2230-aa09-4624-8d45-0d9a0be3aefa"
-kms_client = boto3.client("kms", region_name="eu-central-1")
+from Backend.config import AWS_KMS_KEY_ID, AWS_REGION
+
+kms_client = boto3.client("kms", region_name=AWS_REGION)
 
 class Encrypter:
     def __init__(self):
@@ -12,7 +13,7 @@ class Encrypter:
 
     @staticmethod
     def generate_key_pair():
-        keys = kms_client.generate_data_key_pair_without_plaintext(KeyId=KMS_KEY, KeyPairSpec="RSA_2048")
+        keys = kms_client.generate_data_key_pair_without_plaintext(KeyId=AWS_KMS_KEY_ID, KeyPairSpec="RSA_2048")
 
         # keys["PrivateKeyCiphertextBlob"] is the cyphered private key
         # keys["PublicKey"] is the public key

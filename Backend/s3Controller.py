@@ -1,35 +1,38 @@
 ﻿import boto3
 from botocore.exceptions import ClientError
 
+from Backend.config import AWS_REGION, S3_BUCKET_NAME
 from Backend.database import DatabaseAPI
 from Backend.encrypter import Encrypter
 from Backend.errorEnums import S3UploadError, S3BucketError
 
 
 class S3Controller:
-    DEFAULT_REGION = 'eu-central-1'
-    BUCKET_PREFIX = 'IaaS-6'
+    DEFAULT_REGION = AWS_REGION
+    BUCKET_NAME = S3_BUCKET_NAME
 
     def __init__(self):
         self.s3_client = self.get_s3_client()
 
     def get_s3_client(self):
-        """Create a S3 cliente
-        :return: S3 cliente in eu-central-1 region
+        """Create a S3 client
+        :return: S3 client in the configured region
         """
         return boto3.client('s3', region_name=self.DEFAULT_REGION)
 
     def create_empty_bucket(self, username):
-        """Create an S3 bucket in eu-central-1 region
+        """Create the root S3 bucket in the configured region
 
-        :param username: Bucket name to create
-        :return: True if bucket created, else False
+        All users share this single bucket, each under their own prefix.
+
+        :param username: Prefix to reserve for the user
+        :return: True if the bucket exists and the prefix was created, else False
         """
 
         if not self.__create_root_bucket():
             return S3BucketError.ROOT_BUCKET_NOT_CREATED
         try:
-            bucket_name = f"{self.BUCKET_PREFIX}".lower()
+            bucket_name = self.BUCKET_NAME
             self.s3_client.put_object(Bucket=bucket_name, Key=f"{username}/")
             return True
         except ClientError as e:
@@ -38,11 +41,11 @@ class S3Controller:
             return error_code == 'BucketAlreadyOwnedByYou'
 
     def __create_root_bucket(self):
-        """ Create root bucket in eu-central-1 region
+        """ Create root bucket in the configured region
         :return: True if bucket created, else False
         """
         location = {'LocationConstraint': self.DEFAULT_REGION}
-        bucket_name = f"{self.BUCKET_PREFIX}".lower()
+        bucket_name = self.BUCKET_NAME
 
         try:
             self.s3_client.create_bucket(Bucket=bucket_name, CreateBucketConfiguration=location)
@@ -62,7 +65,7 @@ class S3Controller:
         """
 
         try:
-            bucket_name = f"{self.BUCKET_PREFIX}".lower()
+            bucket_name = self.BUCKET_NAME
             self.s3_client.put_object(Bucket=bucket_name, Key=f"{username}/{object_name}.bin", Body=file_to_upload)
             return True
         except ClientError as e:
@@ -82,7 +85,7 @@ class S3Controller:
         """
 
         try:
-            bucket_name = f"{self.BUCKET_PREFIX}".lower()
+            bucket_name = self.BUCKET_NAME
 
             self.s3_client.put_object(Bucket=bucket_name, Key=f"{username}/{object_name}/message.bin", Body=message_to_upload)
             self.s3_client.put_object(Bucket=bucket_name, Key=f"{username}/{object_name}/encrypted_aes_key.bin", Body=encrypted_aes_key)
@@ -102,7 +105,7 @@ class S3Controller:
         """
 
         try:
-            bucket_name = f"{self.BUCKET_PREFIX}".lower()
+            bucket_name = self.BUCKET_NAME
             objets = self.s3_client.list_objects_v2(Bucket=bucket_name, Prefix=username)
 
             result = []
@@ -129,7 +132,7 @@ class S3Controller:
         """
 
         try:
-            bucket_name = f"{self.BUCKET_PREFIX}".lower()
+            bucket_name = self.BUCKET_NAME
 
             # check if bucket is empty
             response = self.s3_client.list_objects_v2(Bucket=bucket_name, Prefix=f"{username}/", MaxKeys=1)
