@@ -1,0 +1,28 @@
+﻿{% extends "base.html" %}
+
+{% block head %}
+{% endblock %}
+
+{% block body %}
+    <div class="main-container">
+        <h1>Message App</h1>
+        <div class="login">
+            <form action="/profile" method="POST">
+                <input type="text" name="username" placeholder="Username">
+                <input type="password" name="password" placeholder="Password">
+                <input type="submit" value="Login">
+            </form>
+
+            <form action="/signup" method="GET">
+                <input type="submit" value="Sign up">
+            </form>
+        </div>
+
+        <div class="sendMessage">
+            <form action="/sendMessage" method="GET">
+                <input type="submit" value="Send Message">
+            </form>
+        </div>
+    </div>
+
+{% endblock %}

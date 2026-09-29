@@ -1,0 +1,25 @@
+﻿{% extends "base.html" %}
+
+{% block head %}
+{% endblock %}
+
+{% block body %}
+<div class="messages-container">
+    <h1>Messages</h1>
+
+    <div class="logout">
+        <form action="/logout" method="GET">
+            <button type="submit">Logout</button>
+        </form>
+    </div>
+
+    <div class="messages">
+        {% for message in messages %}
+            <div class="message">
+                <p class="date">{{ message.date }}</p>
+                <p class="content">{{ message.message }}</p>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
