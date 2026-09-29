@@ -1,11 +1,19 @@
-# pip3 install boto3 pycryptodome
+# pip3 install boto3 pycryptodome
+import os
+
 import boto3
 
 from Crypto.Cipher import PKCS1_OAEP
 from Crypto.PublicKey import RSA
 
-KMS_KEY = "604a3562-e32f-42bd-9089-48c5f451e14f"
-kms_client = boto3.client("kms", region_name="eu-central-1")
+# Set this to the Key ID (not the ARN) of an asymmetric KMS key.
+#   aws kms create-key --description "IaaS" --key-spec RSA_2048 --key-usage SIGN_VERIFY
+# Or export it along with the rest of the configuration: AWS_KMS_KEY_ID=<key-id>
+KMS_KEY = os.environ.get("AWS_KMS_KEY_ID", "")
+if not KMS_KEY:
+    raise RuntimeError("Set the AWS_KMS_KEY_ID environment variable before running this example.")
+
+kms_client = boto3.client("kms", region_name=os.environ.get("AWS_REGION", "eu-central-1"))
 
 def generate_key_pair():
     keys = kms_client.generate_data_key_pair_without_plaintext(KeyId=KMS_KEY, KeyPairSpec="RSA_2048")
